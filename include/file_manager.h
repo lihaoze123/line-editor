@@ -30,10 +30,13 @@ public:
     const std::string& outputFilename() const { return outputFilename_; }
 
 private:
+    void skipUtf8Bom();
+
     std::ifstream input_;
     std::ofstream output_;
     std::string inputFilename_;
     std::string outputFilename_;
+    bool bomChecked_ = false;
 };
 
 } // namespace line_editor

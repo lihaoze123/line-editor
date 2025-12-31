@@ -1,5 +1,6 @@
 #include "editor.h"
 #include "error.h"
+#include "encoding_utils.h"
 #include <iostream>
 #include <string>
 #include <exception>
@@ -17,6 +18,10 @@ void printUsage(const char* programName) {
 }
 
 int main(int argc, char* argv[]) {
+    // Initialize console encoding for Windows UTF-8 support
+    // On non-Windows platforms this is a no-op
+    initializeConsoleEncoding();
+
     try {
         std::string inputFile, outputFile;
 

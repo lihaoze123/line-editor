@@ -8,7 +8,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # 编译选项 - 跨平台支持
 if(MSVC)
-    add_compile_options(/W4)
+    add_compile_options(/W4 /utf-8)
+    # /utf-8 tells MSVC to interpret source files as UTF-8 and set execution charset to UTF-8
 else()
     add_compile_options(-Wall -Wextra)
 endif()
@@ -31,6 +32,7 @@ set(CORE_SOURCES
     src/command_parser.cpp
     src/command_executor.cpp
     src/editor.cpp
+    src/encoding_utils.cpp
 )
 
 # 创建核心库
