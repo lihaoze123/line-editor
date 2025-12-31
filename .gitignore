@@ -1,0 +1,68 @@
+# Build directories
+bin/
+obj/
+build/
+build-debug/
+build-release/
+
+# Object files
+*.o
+*.obj
+*.lo
+*.slo
+
+# Compiled libraries
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+
+# Executables
+*.exe
+*.out
+*.app
+line-editor
+test_runner
+
+# Dependency files
+*.d
+*.dep
+*.dep
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile.cmake
+CTestTestfile.cmake
+_cmake_*/
+*.cmake
+!CMakeLists.txt
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Editor backup files
+*.bak
+*.backup
+*.tmp
+
+# Debug files
+*.su
+*.idb
+*.pdb
+
+# Coverage files
+*.gcda
+*.gcno
+*.gcov
+coverage/
+
+# Log files
+*.log
