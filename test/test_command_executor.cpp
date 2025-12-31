@@ -6,15 +6,52 @@
 #include "test_framework.h"
 #include <fstream>
 #include <cstdio>
+#ifdef _WIN32
+#include <windows.h>
+#undef DELETE
+#undef INSERT
+#else
+#include <cstdlib>
+#endif
 
 using namespace line_editor;
+
+namespace {
+
+// 跨平台获取临时目录
+std::string getTempDir() {
+#ifdef _WIN32
+    char tempPath[MAX_PATH];
+    DWORD result = GetTempPathA(MAX_PATH, tempPath);
+    if (result > 0 && result < MAX_PATH) {
+        return std::string(tempPath);
+    }
+    return ".";
+#else
+    const char* tmp = std::getenv("TMPDIR");
+    if (tmp) return tmp;
+    tmp = std::getenv("TEMP");
+    if (tmp) return tmp;
+    tmp = std::getenv("TMP");
+    if (tmp) return tmp;
+    return "/tmp";
+#endif
+}
 
 // 测试用临时文件管理
 class TempFile {
     std::string path_;
 public:
     TempFile(const std::string& content) {
-        path_ = "/tmp/line_editor_test_" + std::to_string(rand()) + ".txt";
+        std::string tempDir = getTempDir();
+        if (!tempDir.empty() && tempDir.back() != '/' && tempDir.back() != '\\') {
+#ifdef _WIN32
+            tempDir += '\\';
+#else
+            tempDir += '/';
+#endif
+        }
+        path_ = tempDir + "line_editor_test_" + std::to_string(rand()) + ".txt";
         std::ofstream ofs(path_);
         ofs << content;
         ofs.close();
@@ -46,6 +83,8 @@ public:
 
     std::string path() const { return path_; }
 };
+
+} // anonymous namespace
 
 // Test: 执行插入命令
 TEST(Executor_Insert) {

@@ -37,7 +37,15 @@ LineBlock& LineBlock::operator=(LineBlock&& other) noexcept {
         LineBlock* otherNext = other.next_;
         other.next_ = nullptr;
 
-        delete next_;
+        // Delete the entire chain, not just the first block
+        // Use same recursive deletion pattern as destructor
+        LineBlock* current = next_;
+        while (current) {
+            LineBlock* next = current->next_;
+            current->next_ = nullptr;
+            delete current;
+            current = next;
+        }
 
         used_ = other.used_;
         next_ = otherNext;

@@ -1,3 +1,14 @@
+// Platform-specific headers MUST come first to undefine conflicting macros
+#ifdef _WIN32
+#include <windows.h>
+// Windows.h defines DELETE and INSERT as macros that conflict with CommandType enum
+// Undefine them BEFORE including any headers that use CommandType
+#undef DELETE
+#undef INSERT
+#else
+#include <unistd.h>
+#endif
+
 #include "../include/line_block.h"
 #include "../include/line.h"
 #include "../include/active_zone.h"
@@ -12,17 +23,49 @@
 
 using namespace line_editor;
 
+namespace {
+
+// 跨平台获取临时目录
+std::string getTempDir() {
+#ifdef _WIN32
+    char tempPath[MAX_PATH];
+    DWORD result = GetTempPathA(MAX_PATH, tempPath);
+    if (result > 0 && result < MAX_PATH) {
+        return std::string(tempPath);
+    }
+    return ".";  // fallback
+#else
+    const char* tmp = std::getenv("TMPDIR");
+    if (tmp) return tmp;
+    tmp = std::getenv("TEMP");
+    if (tmp) return tmp;
+    tmp = std::getenv("TMP");
+    if (tmp) return tmp;
+    return "/tmp";  // Unix default
+#endif
+}
+
 // 测试用临时文件管理
 class TempFile {
     std::string path_;
 public:
     TempFile(const std::string& content = "") {
-        path_ = "/tmp/line_editor_boundary_" + std::to_string(rand()) + ".txt";
-        if (!content.empty()) {
-            std::ofstream ofs(path_);
-            ofs << content;
-            ofs.close();
+        std::string tempDir = getTempDir();
+        // 确保目录以路径分隔符结尾
+        if (!tempDir.empty() && tempDir.back() != '/' && tempDir.back() != '\\') {
+#ifdef _WIN32
+            tempDir += '\\';
+#else
+            tempDir += '/';
+#endif
         }
+        path_ = tempDir + "line_editor_boundary_" + std::to_string(rand()) + ".txt";
+        std::ofstream ofs(path_, std::ios::trunc);
+        // Always create the file so tests expecting an empty file can open it.
+        if (!content.empty()) {
+            ofs << content;
+        }
+        ofs.close();
     }
 
     // 禁止拷贝
@@ -52,6 +95,8 @@ public:
     std::string path() const { return path_; }
     void remove() { std::remove(path_.c_str()); }
 };
+
+} // anonymous namespace
 
 // ============================================================
 // Error 模块测试
@@ -493,7 +538,17 @@ TEST(FileManager_OpenNonExistentInput) {
 
     bool caught = false;
     try {
-        fm.openInput("/tmp/nonexistent_file_xyz_12345.txt");
+        // 使用跨平台的临时目录路径
+        std::string nonexistentPath = getTempDir();
+        if (!nonexistentPath.empty() && nonexistentPath.back() != '/' && nonexistentPath.back() != '\\') {
+#ifdef _WIN32
+            nonexistentPath += '\\';
+#else
+            nonexistentPath += '/';
+#endif
+        }
+        nonexistentPath += "nonexistent_file_xyz_12345.txt";
+        fm.openInput(nonexistentPath);
     } catch (const EditorException& e) {
         caught = true;
         ASSERT_EQ(static_cast<int>(e.code()), static_cast<int>(ErrorCode::FILE_OPEN_FAILED));

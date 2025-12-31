@@ -1,6 +1,12 @@
 #ifndef COMMAND_PARSER_H
 #define COMMAND_PARSER_H
 
+// Undefine Windows macros that conflict with CommandType enum values
+// Windows.h defines DELETE and INSERT as macros that must be removed
+// unconditional #undef is safe - if macro isn't defined, it's a no-op
+#undef DELETE
+#undef INSERT
+
 #include "error.h"
 #include <string>
 
